@@ -53,21 +53,21 @@
 // Logging functions
 #ifndef LFS_NO_DEBUG
 #define LFS_DEBUG(fmt, ...) \
-    printf("lfs debug:%d: " fmt "\n", __LINE__, __VA_ARGS__)
+    printf("lfs debug:%u: " fmt "\n", __LINE__, __VA_ARGS__)
 #else
 #define LFS_DEBUG(fmt, ...)
 #endif
 
 #ifndef LFS_NO_WARN
 #define LFS_WARN(fmt, ...) \
-    printf("lfs warn:%d: " fmt "\n", __LINE__, __VA_ARGS__)
+    printf("lfs warn:%u: " fmt "\n", __LINE__, __VA_ARGS__)
 #else
 #define LFS_WARN(fmt, ...)
 #endif
 
 #ifndef LFS_NO_ERROR
 #define LFS_ERROR(fmt, ...) \
-    printf("lfs error:%d: " fmt "\n", __LINE__, __VA_ARGS__)
+    printf("lfs error:%u: " fmt "\n", __LINE__, __VA_ARGS__)
 #else
 #define LFS_ERROR(fmt, ...)
 #endif
