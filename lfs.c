@@ -883,7 +883,7 @@ static int lfs_dir_find(lfs_t *lfs, lfs_dir_t *dir,
 
 
 /// Top level directory operations ///
-int lfs_mkdir(lfs_t *lfs, const char *path) {
+int __attribute__((weak)) lfs_mkdir(lfs_t *lfs, const char *path) {
     // deorphan if we haven't yet, needed at most once after poweron
     if (!lfs->deorphaned) {
         int err = lfs_deorphan(lfs);
@@ -940,7 +940,7 @@ int lfs_mkdir(lfs_t *lfs, const char *path) {
     return 0;
 }
 
-int lfs_dir_open(lfs_t *lfs, lfs_dir_t *dir, const char *path) {
+int __attribute__((weak)) lfs_dir_open(lfs_t *lfs, lfs_dir_t *dir, const char *path) {
     dir->pair[0] = lfs->root[0];
     dir->pair[1] = lfs->root[1];
 
@@ -976,7 +976,7 @@ int lfs_dir_open(lfs_t *lfs, lfs_dir_t *dir, const char *path) {
     return 0;
 }
 
-int lfs_dir_close(lfs_t *lfs, lfs_dir_t *dir) {
+int __attribute__((weak)) lfs_dir_close(lfs_t *lfs, lfs_dir_t *dir) {
     // remove from list of directories
     for (lfs_dir_t **p = &lfs->dirs; *p; p = &(*p)->next) {
         if (*p == dir) {
@@ -988,7 +988,7 @@ int lfs_dir_close(lfs_t *lfs, lfs_dir_t *dir) {
     return 0;
 }
 
-int lfs_dir_read(lfs_t *lfs, lfs_dir_t *dir, struct lfs_info *info) {
+int __attribute__((weak)) lfs_dir_read(lfs_t *lfs, lfs_dir_t *dir, struct lfs_info *info) {
     memset(info, 0, sizeof(*info));
 
     // special offset for '.' and '..'
@@ -1048,7 +1048,7 @@ int lfs_dir_read(lfs_t *lfs, lfs_dir_t *dir, struct lfs_info *info) {
     return 1;
 }
 
-int lfs_dir_seek(lfs_t *lfs, lfs_dir_t *dir, lfs_off_t off) {
+int __attribute__((weak)) lfs_dir_seek(lfs_t *lfs, lfs_dir_t *dir, lfs_off_t off) {
     // simply walk from head dir
     int err = lfs_dir_rewind(lfs, dir);
     if (err) {
@@ -1072,12 +1072,12 @@ int lfs_dir_seek(lfs_t *lfs, lfs_dir_t *dir, lfs_off_t off) {
     return 0;
 }
 
-lfs_soff_t lfs_dir_tell(lfs_t *lfs, lfs_dir_t *dir) {
+lfs_soff_t __attribute__((weak)) lfs_dir_tell(lfs_t *lfs, lfs_dir_t *dir) {
     (void)lfs;
     return dir->pos;
 }
 
-int lfs_dir_rewind(lfs_t *lfs, lfs_dir_t *dir) {
+int __attribute__((weak)) lfs_dir_rewind(lfs_t *lfs, lfs_dir_t *dir) {
     // reload the head dir
     int err = lfs_dir_fetch(lfs, dir, dir->head);
     if (err) {
@@ -1280,7 +1280,7 @@ static int lfs_ctz_traverse(lfs_t *lfs,
 
 
 /// Top level file operations ///
-int lfs_file_open(lfs_t *lfs, lfs_file_t *file,
+int __attribute__((weak)) lfs_file_open(lfs_t *lfs, lfs_file_t *file,
         const char *path, int flags) {
     // deorphan if we haven't yet, needed at most once after poweron
     if ((flags & 3) != LFS_O_RDONLY && !lfs->deorphaned) {
@@ -1365,7 +1365,7 @@ int lfs_file_open(lfs_t *lfs, lfs_file_t *file,
     return 0;
 }
 
-int lfs_file_close(lfs_t *lfs, lfs_file_t *file) {
+int __attribute__((weak)) lfs_file_close(lfs_t *lfs, lfs_file_t *file) {
     int err = lfs_file_sync(lfs, file);
 
     // remove from list of files
@@ -1503,7 +1503,7 @@ relocate:
     return 0;
 }
 
-int lfs_file_sync(lfs_t *lfs, lfs_file_t *file) {
+int __attribute__((weak)) lfs_file_sync(lfs_t *lfs, lfs_file_t *file) {
     int err = lfs_file_flush(lfs, file);
     if (err) {
         return err;
@@ -1542,7 +1542,7 @@ int lfs_file_sync(lfs_t *lfs, lfs_file_t *file) {
     return 0;
 }
 
-lfs_ssize_t lfs_file_read(lfs_t *lfs, lfs_file_t *file,
+lfs_ssize_t __attribute__((weak)) lfs_file_read(lfs_t *lfs, lfs_file_t *file,
         void *buffer, lfs_size_t size) {
     uint8_t *data = buffer;
     lfs_size_t nsize = size;
@@ -1598,7 +1598,7 @@ lfs_ssize_t lfs_file_read(lfs_t *lfs, lfs_file_t *file,
     return size;
 }
 
-lfs_ssize_t lfs_file_write(lfs_t *lfs, lfs_file_t *file,
+lfs_ssize_t __attribute__((weak)) lfs_file_write(lfs_t *lfs, lfs_file_t *file,
         const void *buffer, lfs_size_t size) {
     const uint8_t *data = buffer;
     lfs_size_t nsize = size;
@@ -1697,7 +1697,7 @@ relocate:
     return size;
 }
 
-lfs_soff_t lfs_file_seek(lfs_t *lfs, lfs_file_t *file,
+lfs_soff_t __attribute__((weak)) lfs_file_seek(lfs_t *lfs, lfs_file_t *file,
         lfs_soff_t off, int whence) {
     // write out everything beforehand, may be noop if rdonly
     int err = lfs_file_flush(lfs, file);
@@ -1725,7 +1725,7 @@ lfs_soff_t lfs_file_seek(lfs_t *lfs, lfs_file_t *file,
     return file->pos;
 }
 
-int lfs_file_truncate(lfs_t *lfs, lfs_file_t *file, lfs_off_t size) {
+int __attribute__((weak)) lfs_file_truncate(lfs_t *lfs, lfs_file_t *file, lfs_off_t size) {
     if ((file->flags & 3) == LFS_O_RDONLY) {
         return LFS_ERR_BADF;
     }
@@ -1777,12 +1777,12 @@ int lfs_file_truncate(lfs_t *lfs, lfs_file_t *file, lfs_off_t size) {
     return 0;
 }
 
-lfs_soff_t lfs_file_tell(lfs_t *lfs, lfs_file_t *file) {
+lfs_soff_t __attribute__((weak)) lfs_file_tell(lfs_t *lfs, lfs_file_t *file) {
     (void)lfs;
     return file->pos;
 }
 
-int lfs_file_rewind(lfs_t *lfs, lfs_file_t *file) {
+int __attribute__((weak)) lfs_file_rewind(lfs_t *lfs, lfs_file_t *file) {
     lfs_soff_t res = lfs_file_seek(lfs, file, 0, LFS_SEEK_SET);
     if (res < 0) {
         return res;
@@ -1791,7 +1791,7 @@ int lfs_file_rewind(lfs_t *lfs, lfs_file_t *file) {
     return 0;
 }
 
-lfs_soff_t lfs_file_size(lfs_t *lfs, lfs_file_t *file) {
+lfs_soff_t __attribute__((weak)) lfs_file_size(lfs_t *lfs, lfs_file_t *file) {
     (void)lfs;
     if (file->flags & LFS_F_WRITING) {
         return lfs_max(file->pos, file->size);
@@ -1802,7 +1802,7 @@ lfs_soff_t lfs_file_size(lfs_t *lfs, lfs_file_t *file) {
 
 
 /// General fs operations ///
-int lfs_stat(lfs_t *lfs, const char *path, struct lfs_info *info) {
+int __attribute__((weak)) lfs_stat(lfs_t *lfs, const char *path, struct lfs_info *info) {
     lfs_dir_t cwd;
     int err = lfs_dir_fetch(lfs, &cwd, lfs->root);
     if (err) {
@@ -1835,7 +1835,7 @@ int lfs_stat(lfs_t *lfs, const char *path, struct lfs_info *info) {
     return 0;
 }
 
-int lfs_remove(lfs_t *lfs, const char *path) {
+int __attribute__((weak)) lfs_remove(lfs_t *lfs, const char *path) {
     // deorphan if we haven't yet, needed at most once after poweron
     if (!lfs->deorphaned) {
         int err = lfs_deorphan(lfs);
@@ -1895,7 +1895,7 @@ int lfs_remove(lfs_t *lfs, const char *path) {
     return 0;
 }
 
-int lfs_rename(lfs_t *lfs, const char *oldpath, const char *newpath) {
+int __attribute__((weak)) lfs_rename(lfs_t *lfs, const char *oldpath, const char *newpath) {
     // deorphan if we haven't yet, needed at most once after poweron
     if (!lfs->deorphaned) {
         int err = lfs_deorphan(lfs);
@@ -2086,7 +2086,7 @@ static int lfs_deinit(lfs_t *lfs) {
     return 0;
 }
 
-int lfs_format(lfs_t *lfs, const struct lfs_config *cfg) {
+int __attribute__((weak)) lfs_format(lfs_t *lfs, const struct lfs_config *cfg) {
     int err = lfs_init(lfs, cfg);
     if (err) {
         return err;
@@ -2166,7 +2166,7 @@ int lfs_format(lfs_t *lfs, const struct lfs_config *cfg) {
     return lfs_deinit(lfs);
 }
 
-int lfs_mount(lfs_t *lfs, const struct lfs_config *cfg) {
+int __attribute__((weak)) lfs_mount(lfs_t *lfs, const struct lfs_config *cfg) {
     int err = lfs_init(lfs, cfg);
     if (err) {
         return err;
@@ -2214,13 +2214,13 @@ int lfs_mount(lfs_t *lfs, const struct lfs_config *cfg) {
     return 0;
 }
 
-int lfs_unmount(lfs_t *lfs) {
+int __attribute__((weak)) lfs_unmount(lfs_t *lfs) {
     return lfs_deinit(lfs);
 }
 
 
 /// Littlefs specific operations ///
-int lfs_traverse(lfs_t *lfs, int (*cb)(void*, lfs_block_t), void *data) {
+int __attribute__((weak)) lfs_traverse(lfs_t *lfs, int (*cb)(void*, lfs_block_t), void *data) {
     if (lfs_pairisnull(lfs->root)) {
         return 0;
     }
@@ -2442,7 +2442,7 @@ static int lfs_relocate(lfs_t *lfs,
     return 0;
 }
 
-int lfs_deorphan(lfs_t *lfs) {
+int __attribute__((weak)) lfs_deorphan(lfs_t *lfs) {
     lfs->deorphaned = true;
 
     if (lfs_pairisnull(lfs->root)) {
